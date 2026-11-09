@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="login-wrap panel">
+  <h1 class="mb-1">Student Performance Prediction</h1>
+  <p class="text-muted">Log in to review students and spot who needs support early.</p>
+  <form method="post">
+    <label class="form-label" for="u">Username</label>
+    <input class="form-control mb-3" id="u" name="username" required autofocus>
+    <label class="form-label" for="p">Password</label>
+    <input class="form-control mb-3" id="p" name="password" type="password" required>
+    <button class="btn btn-ink w-100">Log in</button>
+  </form>
+</div>
+{% endblock %}

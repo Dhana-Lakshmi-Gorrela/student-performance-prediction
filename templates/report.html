@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk, val %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <a href="{{ url_for('student_detail', sid=s.id) }}">&larr; Back to profile</a>
+  <button class="btn btn-ink" onclick="window.print()">Print or save as PDF</button>
+</div>
+<div class="panel">
+  <h1 class="mb-1">Student performance report</h1>
+  <div class="text-muted mb-3">Generated {{ now }}</div>
+  <div class="row mb-2">
+    <div class="col-md-6"><h2>{{ s.name }}</h2><div>{{ s.roll_no }} · {{ s.department }} · Year {{ s.year_of_study }}</div></div>
+    <div class="col-md-6 text-md-end">{% if latest %}<div style="font-size:2rem;font-family:Newsreader,serif">{{ latest.predicted_score }} / 100</div>
+      {{ cat(latest.category) }} {{ risk(latest.risk_level) }}{% else %}<span class="text-muted">No prediction yet</span>{% endif %}</div>
+  </div>
+</div>
+<div class="strip">
+  <div><div class="v">{{ val(m.attendance, '%') }}</div><div class="l">Attendance</div></div>
+  <div><div class="v">{{ val(m.prev_marks) }}</div><div class="l">Average marks</div></div>
+  <div><div class="v">{{ val(m.study_hours) }}</div><div class="l">Study hours / week</div></div>
+  <div><div class="v">{{ val(m.assignment_score, '%') }}</div><div class="l">Assignment score</div></div>
+</div>
+<div class="row">
+  <div class="col-md-6"><div class="panel"><h3>Subject-wise marks</h3><div id="c-subjects" class="chart"></div>
+    <table class="table mt-2"><tr><th>Subject</th><th>Average</th><th>Low</th><th>High</th></tr>
+    {% for r in subjects %}<tr><td>{{ r.subject }}</td><td>{{ r.avg }}</td><td>{{ r.lo }}</td><td>{{ r.hi }}</td></tr>{% endfor %}</table></div></div>
+  <div class="col-md-6"><div class="panel"><h3>Predicted score over time</h3><div id="c-pred" class="chart"></div></div>
+    <div class="panel"><h3>Improvement suggestions</h3>
+      {% if tips %}<ul class="tips mb-0">{% for t in tips %}<li>{{ t }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted mb-0">Run a prediction to generate suggestions.</p>{% endif %}</div></div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+const C={{ charts|tojson }};
+bars('c-subjects',C.subjects,'Average marks');
+line('c-pred',C.predictions,'#1b2a41','Predicted score',[0,100]);
+</script>{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div><h1 class="mb-0">Prediction history</h1><div class="text-muted">{{ s.name }} ({{ s.roll_no }})</div></div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('student_detail', sid=s.id) }}">Back to profile</a>
+</div>
+<div class="panel"><h2>Predicted score over time</h2><div id="c-pred" class="chart"></div></div>
+<div class="panel table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th>Date</th><th>Attendance</th><th>Marks</th><th>Study h</th><th>Assignments</th><th>Predicted</th><th>Change</th><th>Category</th><th>Risk</th></tr></thead>
+    {% for r in rows %}
+    <tr><td>{{ r.created_at|string|truncate(16, True, '') }}</td><td>{{ r.attendance }}%</td><td>{{ r.prev_marks }}</td><td>{{ r.study_hours }}</td><td>{{ r.assignment_score }}%</td>
+      <td><strong>{{ r.predicted_score }}</strong></td>
+      <td>{% if r.delta is none %}-{% elif r.delta >= 0 %}<span class="delta-up">+{{ r.delta }}</span>{% else %}<span class="delta-down">{{ r.delta }}</span>{% endif %}</td>
+      <td>{{ cat(r.category) }}</td><td>{{ risk(r.risk_level) }}</td></tr>
+    {% else %}<tr><td colspan="9" class="text-muted">No predictions yet. Run one from the student's profile.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}<script>line('c-pred',{{ charts.predictions|tojson }},'#1b2a41','Predicted score',[0,100]);</script>{% endblock %}

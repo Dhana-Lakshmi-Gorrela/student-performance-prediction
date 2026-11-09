@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Student Performance Prediction{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Newsreader:wght@500;600&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+{% if session.user %}
+<nav class="topbar navbar navbar-expand-lg py-2">
+  <div class="container">
+    <a class="brand me-4" href="{{ url_for('dashboard') }}">Performance Predictor</a>
+    <button class="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon" style="filter:invert(1)"></span></button>
+    <div class="collapse navbar-collapse" id="nav">
+      <div class="navbar-nav me-auto">
+        {% set ep = request.endpoint %}
+        <a class="nav-link {{ 'active' if ep=='dashboard' }}" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="nav-link {{ 'active' if ep and ep.startswith('student') }}" href="{{ url_for('students') }}">Students</a>
+        <a class="nav-link {{ 'active' if ep=='at_risk' }}" href="{{ url_for('at_risk') }}">At-risk</a>
+        <a class="nav-link {{ 'active' if ep=='analytics' }}" href="{{ url_for('analytics') }}">Analytics</a>
+        {% if session.role == 'admin' %}<a class="nav-link {{ 'active' if ep=='users' }}" href="{{ url_for('users') }}">Users</a>{% endif %}
+      </div>
+      <span class="text-white-50 me-3">{{ session.user }} ({{ session.role }})</span>
+      <a class="btn btn-sm btn-outline-light" href="{{ url_for('logout') }}">Log out</a>
+    </div>
+  </div>
+</nav>
+{% endif %}
+<main class="container py-4">
+  {% for c, m in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ c }} py-2">{{ m }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

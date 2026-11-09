@@ -1,0 +1,31 @@
+:root{--ink:#1b2a41;--paper:#f2f4f7;--line:#dde2ea;--muted:#5b6778;
+--excellent:#0e7c7b;--good:#2f6fb0;--average:#b87a0a;--poor:#b83a2e}
+body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:.95rem}
+h1,h2,h3,h4,.brand{font-family:'Newsreader',Georgia,serif;font-weight:600;letter-spacing:-.01em}
+h1{font-size:2rem}h2{font-size:1.45rem}h3{font-size:1.15rem}
+a{color:var(--good)}
+.topbar{background:var(--ink)}
+.topbar .brand{color:#fff;font-size:1.3rem;text-decoration:none}
+.topbar .nav-link{color:#c5cee0;padding:.35rem .8rem;border-radius:4px}
+.topbar .nav-link:hover,.topbar .nav-link.active{color:#fff;background:rgba(255,255,255,.12)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:6px;padding:1.25rem;margin-bottom:1.25rem}
+.panel>h2:first-child,.panel>h3:first-child{margin-bottom:.9rem}
+.strip{display:flex;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:6px;margin-bottom:1.25rem}
+.strip>div{flex:1 1 150px;padding:1rem 1.25rem;border-right:1px solid var(--line)}
+.strip>div:last-child{border-right:0}
+.strip .v{font-family:'Newsreader',serif;font-size:1.9rem;line-height:1.1}
+.strip .l{color:var(--muted);font-size:.85rem}
+.pill{display:inline-block;padding:.15rem .65rem;border-radius:99px;font-size:.8rem;font-weight:500;color:#fff}
+.c-Excellent,.r-Low{background:var(--excellent)}.c-Good{background:var(--good)}
+.c-Average,.r-Medium{background:var(--average)}.c-Poor,.r-High{background:var(--poor)}
+.table{--bs-table-bg:transparent;margin:0}
+.table th{font-weight:500;color:var(--muted);font-size:.85rem;border-bottom-color:var(--line)}
+.form-label{font-size:.85rem;color:var(--muted);margin-bottom:.2rem}
+.btn-ink{background:var(--ink);color:#fff;border:0}.btn-ink:hover{background:#2c4166;color:#fff}
+.nav-tabs .nav-link{color:var(--muted)}.nav-tabs .nav-link.active{color:var(--ink);font-weight:500}
+.tips li{margin-bottom:.5rem}
+.login-wrap{max-width:380px;margin:12vh auto}
+.chart{min-height:280px}
+.delta-up{color:var(--excellent)}.delta-down{color:var(--poor)}
+:focus-visible{outline:2px solid var(--good);outline-offset:2px}
+@media print{.topbar,.no-print,.alert{display:none!important}body{background:#fff}.panel{border:1px solid #ccc;break-inside:avoid}}

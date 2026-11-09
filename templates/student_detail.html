@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk, val %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-2">
+  <div>
+    <h1 class="mb-1">{{ s.name }}</h1>
+    <div class="text-muted">{{ s.roll_no }} · {{ s.department }} · Year {{ s.year_of_study }}{% if s.email %} · {{ s.email }}{% endif %}</div>
+    <div class="mt-2">{{ cat(latest.category if latest) }} {{ risk(latest.risk_level if latest) }}
+      {% if latest %}<span class="ms-2">Predicted score <strong>{{ latest.predicted_score }}</strong></span>{% endif %}</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap no-print">
+    <a class="btn btn-ink" href="{{ url_for('predict', sid=s.id) }}">Predict performance</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('history', sid=s.id) }}">History</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('report', sid=s.id) }}">Report</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('student_form', sid=s.id) }}">Edit</a>
+    {% if session.role == 'admin' %}
+    <form method="post" action="{{ url_for('delete_student', sid=s.id) }}" onsubmit="return confirm('Delete this student and all records?')">
+      <button class="btn btn-outline-danger">Delete</button></form>{% endif %}
+  </div>
+</div>
+
+<div class="strip">
+  <div><div class="v">{{ val(m.attendance, '%') }}</div><div class="l">Attendance</div></div>
+  <div><div class="v">{{ val(m.prev_marks) }}</div><div class="l">Average marks</div></div>
+  <div><div class="v">{{ val(m.study_hours) }}</div><div class="l">Study hours / week</div></div>
+  <div><div class="v">{{ val(m.assignment_score, '%') }}</div><div class="l">Assignment score</div></div>
+</div>
+
+{% if weak %}<div class="alert alert-warning">Weak subjects (average below 50):
+  {% for sub, a in weak %}<strong>{{ sub }}</strong> ({{ '%.0f'|format(a) }}){{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
+
+<div class="row">
+  <div class="col-lg-6"><div class="panel"><h3>Subject-wise average marks</h3><div id="c-subjects" class="chart"></div></div></div>
+  <div class="col-lg-6"><div class="panel"><h3>Marks trend by exam</h3><div id="c-terms" class="chart"></div></div></div>
+  <div class="col-lg-6"><div class="panel"><h3>Attendance over time</h3><div id="c-att" class="chart"></div></div></div>
+  <div class="col-lg-6"><div class="panel"><h3>Study hours per week</h3><div id="c-study" class="chart"></div></div></div>
+</div>
+
+<div class="panel no-print">
+  <h2>Academic records</h2>
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    {% for k, label in [('marks','Marks'),('attendance','Attendance'),('study','Study hours'),('assignment','Assignments')] %}
+    <li class="nav-item"><button class="nav-link {{ 'active' if loop.first }}" data-bs-toggle="tab" data-bs-target="#tab-{{ k }}" id="btn-{{ k }}">{{ label }}</button></li>{% endfor %}
+  </ul>
+  {% macro del(kind, rid) %}<form method="post" action="{{ url_for('delete_record', sid=s.id, kind=kind, rid=rid) }}" class="d-inline"><button class="btn btn-sm btn-link text-danger p-0">Remove</button></form>{% endmacro %}
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-marks">
+      <form method="post" action="{{ url_for('add_record', sid=s.id, kind='marks') }}" class="row g-2 mb-3">
+        <div class="col-md-4"><input class="form-control" name="subject" placeholder="Subject" required></div>
+        <div class="col-md-3"><input class="form-control" name="term" placeholder="Exam (e.g. Mid Term)" required></div>
+        <div class="col-md-3"><input class="form-control" name="marks" type="number" step="0.1" min="0" max="100" placeholder="Marks / 100" required></div>
+        <div class="col-md-2"><button class="btn btn-ink w-100">Add marks</button></div></form>
+      <table class="table"><tr><th>Subject</th><th>Exam</th><th>Marks</th><th></th></tr>
+        {% for r in marks %}<tr><td>{{ r.subject }}</td><td>{{ r.term }}</td><td>{{ r.marks }}</td><td>{{ del('marks', r.id) }}</td></tr>
+        {% else %}<tr><td colspan="4" class="text-muted">No marks recorded yet.</td></tr>{% endfor %}</table>
+    </div>
+    <div class="tab-pane fade" id="tab-attendance">
+      <form method="post" action="{{ url_for('add_record', sid=s.id, kind='attendance') }}" class="row g-2 mb-3">
+        <div class="col-md-5"><input class="form-control" type="date" name="date" value="{{ today }}" required></div>
+        <div class="col-md-5"><input class="form-control" name="percentage" type="number" step="0.1" min="0" max="100" placeholder="Attendance %" required></div>
+        <div class="col-md-2"><button class="btn btn-ink w-100">Add</button></div></form>
+      <table class="table"><tr><th>Date</th><th>Attendance</th><th></th></tr>
+        {% for r in attendance %}<tr><td>{{ r.record_date }}</td><td>{{ r.percentage }}%</td><td>{{ del('attendance', r.id) }}</td></tr>
+        {% else %}<tr><td colspan="3" class="text-muted">No attendance recorded yet.</td></tr>{% endfor %}</table>
+    </div>
+    <div class="tab-pane fade" id="tab-study">
+      <form method="post" action="{{ url_for('add_record', sid=s.id, kind='study') }}" class="row g-2 mb-3">
+        <div class="col-md-5"><input class="form-control" type="date" name="date" value="{{ today }}" required></div>
+        <div class="col-md-5"><input class="form-control" name="hours" type="number" step="0.5" min="0" max="80" placeholder="Hours studied this week" required></div>
+        <div class="col-md-2"><button class="btn btn-ink w-100">Add</button></div></form>
+      <table class="table"><tr><th>Week of</th><th>Hours</th><th></th></tr>
+        {% for r in study %}<tr><td>{{ r.log_date }}</td><td>{{ r.hours }}</td><td>{{ del('study', r.id) }}</td></tr>
+        {% else %}<tr><td colspan="3" class="text-muted">No study hours logged yet.</td></tr>{% endfor %}</table>
+    </div>
+    <div class="tab-pane fade" id="tab-assignment">
+      <form method="post" action="{{ url_for('add_record', sid=s.id, kind='assignment') }}" class="row g-2 mb-3">
+        <div class="col-md-3"><input class="form-control" name="subject" placeholder="Subject" required></div>
+        <div class="col-md-3"><input class="form-control" name="title" placeholder="Assignment title" required></div>
+        <div class="col-md-2"><input class="form-control" name="score" type="number" step="0.1" min="0" placeholder="Score" required></div>
+        <div class="col-md-2"><input class="form-control" name="max_score" type="number" step="0.1" min="1" value="100" required></div>
+        <div class="col-md-2"><button class="btn btn-ink w-100">Add</button></div></form>
+      <table class="table"><tr><th>Subject</th><th>Title</th><th>Score</th><th></th></tr>
+        {% for r in assignments %}<tr><td>{{ r.subject }}</td><td>{{ r.title }}</td><td>{{ r.score }} / {{ r.max_score }}</td><td>{{ del('assignment', r.id) }}</td></tr>
+        {% else %}<tr><td colspan="4" class="text-muted">No assignments recorded yet.</td></tr>{% endfor %}</table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const C={{ charts|tojson }};
+bars('c-subjects',C.subjects,'Average marks');
+line('c-terms',C.terms,'#2f6fb0','Average marks',[0,100]);
+line('c-att',C.attendance,'#0e7c7b','Attendance %',[0,100]);
+line('c-study',C.study,'#b87a0a','Hours');
+// open the tab named in the URL (after adding a record)
+const h=location.hash.replace('#tab-','');
+if(h&&document.getElementById('btn-'+h))new bootstrap.Tab(document.getElementById('btn-'+h)).show();
+</script>
+{% endblock %}

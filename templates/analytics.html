@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-3">Analytics</h1>
+<div class="row">
+  <div class="col-lg-7"><div class="panel"><h2>Subject-wise performance (all students)</h2>
+    <div id="c-subj" class="chart"></div>
+    <table class="table mt-3"><tr><th>Subject</th><th>Average</th><th>Lowest</th><th>Highest</th><th>Scores below 40</th></tr>
+      {% for r in subjects %}<tr><td>{{ r.subject }}</td><td>{{ r.avg }}</td><td>{{ r.lo }}</td><td>{{ r.hi }}</td><td>{{ r.failing }} of {{ r.n }}</td></tr>
+      {% else %}<tr><td colspan="5" class="text-muted">No marks recorded yet.</td></tr>{% endfor %}</table></div></div>
+  <div class="col-lg-5">
+    <div class="panel"><h2>What moves marks?</h2>
+      <p class="text-muted">Correlation with average marks across students (1 = rises together, 0 = unrelated).</p>
+      <div id="c-corr" class="chart"></div></div>
+    <div class="panel"><h2>Prediction model</h2>
+      <p class="mb-2">Random Forest trained on {{ meta.samples }} records ({{ meta.source }} data).
+        R² <strong>{{ meta.r2 }}</strong>, average error <strong>{{ meta.mae }}</strong> marks.</p>
+      <div id="c-imp" style="min-height:220px"></div></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const subj={{ subjects|tojson }}, corr={{ corr|tojson }}, imp={{ meta.importance|tojson }}, labels={{ labels|tojson }};
+bars('c-subj',{x:subj.map(r=>r.subject),y:subj.map(r=>r.avg)},'Average marks');
+if(Object.keys(corr).length) draw('c-corr',[{y:Object.keys(corr),x:Object.values(corr),type:'bar',orientation:'h',marker:{color:'#2f6fb0'}}],
+  {xaxis:{range:[-1,1],gridcolor:'#e7ebf1'},margin:{t:10,r:15,b:35,l:140}});
+else document.getElementById('c-corr').innerHTML='<p class="text-muted">Add data for at least 3 students.</p>';
+draw('c-imp',[{y:Object.keys(imp).map(k=>labels[k]),x:Object.values(imp),type:'bar',orientation:'h',marker:{color:'#0e7c7b'}}],
+  {xaxis:{title:'Importance',gridcolor:'#e7ebf1'},margin:{t:10,r:15,b:40,l:140}});
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Dashboard</h1>
+  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('export_predictions') }}">Download predictions (CSV)</a>
+</div>
+<div class="strip">
+  <div><div class="v">{{ total }}</div><div class="l">Students</div></div>
+  <div><div class="v">{{ predicted }}</div><div class="l">With a prediction</div></div>
+  <div><div class="v" style="color:var(--poor)">{{ at_risk|length }}</div><div class="l">Need support</div></div>
+  <div><div class="v">{{ avg_att }}%</div><div class="l">Average attendance</div></div>
+  <div><div class="v">{{ avg_marks }}</div><div class="l">Average marks</div></div>
+</div>
+<div class="row">
+  <div class="col-lg-5"><div class="panel"><h2>Performance categories</h2><div id="dist" class="chart"></div></div></div>
+  <div class="col-lg-7"><div class="panel"><h2>Attendance vs marks</h2><div id="scatter" class="chart"></div></div></div>
+</div>
+<div class="row">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="d-flex justify-content-between"><h2>Students who need support</h2><a href="{{ url_for('at_risk') }}">See all</a></div>
+      {% if at_risk %}
+      <table class="table align-middle"><thead><tr><th>Student</th><th>Predicted</th><th>Category</th><th>Risk</th></tr></thead>
+      {% for p in at_risk[:8] %}
+        <tr><td><a href="{{ url_for('student_detail', sid=p.student_id) }}">{{ p.name }}</a></td><td>{{ p.predicted_score }}</td><td>{{ cat(p.category) }}</td><td>{{ risk(p.risk_level) }}</td></tr>
+      {% endfor %}</table>
+      {% else %}<p class="text-muted mb-0">No at-risk students yet. Run predictions from a student's page.</p>{% endif %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel"><h2>Latest predictions</h2>
+      {% for p in recent %}
+        <div class="d-flex justify-content-between py-2 border-bottom"><span>{{ p.name }}</span><span>{{ p.predicted_score }} {{ cat(p.category) }}</span></div>
+      {% else %}<p class="text-muted mb-0">Nothing predicted yet.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const dist={{ dist|tojson }}, pts={{ scatter|tojson }};
+draw('dist',[{x:Object.keys(dist),y:Object.values(dist),type:'bar',marker:{color:Object.keys(dist).map(k=>COLORS[k])},
+  text:Object.values(dist),textposition:'outside'}],{yaxis:{title:'Students',gridcolor:'#e7ebf1'}});
+draw('scatter',[{x:pts.map(p=>p.x),y:pts.map(p=>p.y),text:pts.map(p=>p.name),mode:'markers',
+  marker:{size:10,color:'#2f6fb0',opacity:.75}}],{xaxis:{title:'Attendance %',gridcolor:'#e7ebf1'},yaxis:{title:'Average marks',gridcolor:'#e7ebf1'}});
+</script>
+{% endblock %}

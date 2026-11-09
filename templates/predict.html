@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk %}
+{% block content %}
+<h1 class="mb-1">Predict performance</h1>
+<p class="text-muted">{{ s.name }} ({{ s.roll_no }}). Values are filled from the student's records. Change them to test what-if scenarios.</p>
+{% if missing %}<div class="alert alert-warning">No records yet for: {{ missing|join(', ') }}. They default to 0, so add data first for an accurate prediction.</div>{% endif %}
+<div class="row">
+  <div class="col-lg-5">
+    <form method="post" class="panel">
+      <div class="row g-3">
+        {% for k in ['attendance','prev_marks','study_hours','assignment_score'] %}
+        <div class="col-6"><label class="form-label">{{ labels[k] }}</label>
+          <input class="form-control" type="number" step="0.1" min="0" max="{{ 80 if k=='study_hours' else 100 }}" name="{{ k }}" value="{{ v[k] }}" required></div>
+        {% endfor %}
+      </div>
+      <button class="btn btn-ink mt-4">Run prediction</button>
+      <a class="btn btn-link mt-4" href="{{ url_for('student_detail', sid=s.id) }}">Back to profile</a>
+    </form>
+  </div>
+  <div class="col-lg-7">
+    {% if result %}
+    <div class="panel">
+      <h2>Result</h2>
+      <div id="gauge" style="height:260px"></div>
+      <div class="text-center mb-3">{{ cat(result.category) }} {{ risk(result.risk) }}
+        {% if result.previous is not none %}<div class="text-muted mt-2">Previous prediction: {{ result.previous }}</div>{% endif %}</div>
+      <h3>Improvement suggestions</h3>
+      <ul class="tips">{% for t in result.tips %}<li>{{ t }}</li>{% endfor %}</ul>
+      <a href="{{ url_for('history', sid=s.id) }}">View prediction history</a> · <a href="{{ url_for('report', sid=s.id) }}">Open report</a>
+    </div>
+    {% else %}
+    <div class="panel text-muted">Run a prediction to see the predicted score, performance category, risk level and personalised suggestions.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}{% if result %}
+<script>
+Plotly.newPlot('gauge',[{type:'indicator',mode:'gauge+number',value:{{ result.score }},number:{suffix:' / 100'},
+  gauge:{axis:{range:[0,100]},bar:{color:'#1b2a41',thickness:.25},steps:[
+   {range:[0,50],color:'#e8b8b2'},{range:[50,70],color:'#ecd49b'},{range:[70,85],color:'#b5cde6'},{range:[85,100],color:'#9fd2cf'}]}}],
+  {margin:{t:20,b:10,l:30,r:30},paper_bgcolor:'rgba(0,0,0,0)',font:{family:'IBM Plex Sans'}},{displayModeBar:false,responsive:true});
+</script>{% endif %}{% endblock %}

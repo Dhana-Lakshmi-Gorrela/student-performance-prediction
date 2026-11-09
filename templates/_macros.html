@@ -1,0 +1,3 @@
+{% macro cat(c) %}{% if c %}<span class="pill c-{{ c }}">{{ c }}</span>{% else %}<span class="text-muted">Not predicted</span>{% endif %}{% endmacro %}
+{% macro risk(r) %}{% if r %}<span class="pill r-{{ r }}">{{ r }} risk</span>{% endif %}{% endmacro %}
+{% macro val(x, suffix='') %}{% if x is none %}<span class="text-muted">no data</span>{% else %}{{ x }}{{ suffix }}{% endif %}{% endmacro %}

@@ -1,0 +1,12 @@
+{
+  "source": "synthetic",
+  "samples": 3000,
+  "r2": 0.924,
+  "mae": 2.9,
+  "importance": {
+    "attendance": 0.049,
+    "prev_marks": 0.774,
+    "study_hours": 0.15,
+    "assignment_score": 0.027
+  }
+}

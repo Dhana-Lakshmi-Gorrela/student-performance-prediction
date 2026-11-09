@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cat, risk %}
+{% block content %}
+<h1 class="mb-1">At-risk students</h1>
+<p class="text-muted">Based on each student's latest prediction: predicted score below 65, attendance below 75%, or weak assignments.</p>
+<div class="panel table-responsive">
+<table class="table align-middle">
+  <thead><tr><th>Student</th><th>Department</th><th>Attendance</th><th>Study h</th><th>Assignments</th><th>Predicted</th><th>Category</th><th>Risk</th></tr></thead>
+  {% for r in rows %}
+  <tr><td><a href="{{ url_for('student_detail', sid=r.student_id) }}">{{ r.name }}</a><div class="text-muted small">{{ r.roll_no }}</div></td>
+    <td>{{ r.department }}</td><td>{{ r.attendance }}%</td><td>{{ r.study_hours }}</td><td>{{ r.assignment_score }}%</td>
+    <td><strong>{{ r.predicted_score }}</strong></td><td>{{ cat(r.category) }}</td><td>{{ risk(r.risk_level) }}</td></tr>
+  {% else %}<tr><td colspan="8" class="text-muted">No students are flagged. Run predictions to check everyone.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}
